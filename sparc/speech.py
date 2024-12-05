@@ -64,9 +64,11 @@ class BaseExtractor(object):
         pass
     
     
-    def _load_wav(self, wav):
+    def _load_wav(self, wav, sr=None):
         if isinstance(wav, np.ndarray):
             assert len(wav.shape)==1
+            if sr is not None: 
+                wav = librosa.resample(wav, orig_sr=sr, target_sr=self.sr)
             if self.normalize:
                 wav = (wav-wav.mean())/wav.std()
             return wav
@@ -79,13 +81,13 @@ class BaseExtractor(object):
             wav = (wav-wav.mean())/wav.std()
         return wav
     
-    def process_wavfiles(self, wavfiles):
+    def process_wavfiles(self, wavfiles, sr=None):
         if isinstance(wavfiles, SpeechWave):
             return wavfiles
         if isinstance(wavfiles, str) or isinstance(wavfiles, Path) or \
             isinstance(wavfiles, np.ndarray):
             wavfiles = [wavfiles]
-        wavs = [self._load_wav(wavfile) for wavfile in wavfiles]
+        wavs = [self._load_wav(wavfile, sr) for wavfile in wavfiles]
         wavs = [torch.from_numpy(wav).float() for wav in wavs]
         input_lens = np.array([len(wav) for wav in wavs])
         wavs = torch.nn.utils.rnn.pad_sequence(wavs, batch_first=True, padding_value=0.0)

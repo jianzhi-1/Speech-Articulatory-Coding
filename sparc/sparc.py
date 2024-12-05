@@ -127,8 +127,8 @@ class SPARC(BaseExtractor):
         self.speaker_encoder.to(device)
     
     
-    def encode(self, wavs, split_batch=True, reduce=True):
-        wavs = self.process_wavfiles(wavs)
+    def encode(self, wavs, sr=None, split_batch=True, reduce=True):
+        wavs = self.process_wavfiles(wavs, sr)
         outputs = {}
         include_acoustics=True
         outputs = self.inverter(wavs, outputs, include_acoustics=include_acoustics)
